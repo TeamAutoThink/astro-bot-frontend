@@ -15,17 +15,34 @@ const BirthForm = () => {
     placeOfBirth: '',
   });
 
+  const [validationErrors, setValidationErrors] = useState({});
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setValidationErrors({ ...validationErrors, [e.target.name]: '' }); // Clear error on change
   };
 
-  const [loading, setLoading] = useState(false);
+  const validateForm = () => {
+    const errors = {};
+    if (!form.name.trim()) errors.name = 'Name is required';
+    if (!form.gender) errors.gender = 'Gender is required';
+    if (!form.birthDate) errors.birthDate = 'Birth date is required';
+    if (!form.birthTime) errors.birthTime = 'Birth time is required';
+    if (!form.placeOfBirth.trim()) errors.placeOfBirth = 'Place of birth is required';
+    return errors;
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+
     setLoading(true);
     setResponse(null);
     setError(null);
@@ -38,9 +55,8 @@ const BirthForm = () => {
       .then((res) => res.json())
       .then((data) => setResponse(data))
       .catch((err) => setError(err.message || 'Something went wrong'))
-      .finally(() => setLoading(false)); // Reset loading whether success or error
+      .finally(() => setLoading(false));
   };
-
 
   useEffect(() => {
     const input = document.getElementById('autocomplete');
@@ -60,32 +76,18 @@ const BirthForm = () => {
   }, []);
 
   return (
-    <Container maxWidth={false} disableGutters sx={{
-      width: '100vw',  // 100% of viewport width
-      p: 4,            // optional: padding inside the container
-    }}>
+    <Container maxWidth={false} disableGutters sx={{ width: '100vw', p: 4 }}>
       <Grid container spacing={4}>
         <Grid item size={{ xs: 12, md: 6 }}>
-          <Typography variant="h4" gutterBottom>
-            Birth Details Form
-          </Typography>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            noValidate
-            sx={{
-              '& .MuiTextField-root': {
-                margin: '0px 0px 20px 0px',
-              },
-            }}
-          >
+          <Typography variant="h4" gutterBottom>Birth Details Form</Typography>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ '& .MuiTextField-root': { mb: 2 } }}>
             <TextField
               fullWidth label="Name" name="name" value={form.name} onChange={handleChange}
-              margin="normal" required
+              error={!!validationErrors.name} helperText={validationErrors.name} required
             />
             <TextField
               select fullWidth label="Gender" name="gender" value={form.gender} onChange={handleChange}
-              margin="normal" required
+              error={!!validationErrors.gender} helperText={validationErrors.gender} required
             >
               <MenuItem value="male">Male</MenuItem>
               <MenuItem value="female">Female</MenuItem>
@@ -93,15 +95,18 @@ const BirthForm = () => {
             </TextField>
             <TextField
               fullWidth type="date" label="Birth Date" name="birthDate" value={form.birthDate}
-              onChange={handleChange} margin="normal" InputLabelProps={{ shrink: true }} required
+              onChange={handleChange} InputLabelProps={{ shrink: true }}
+              error={!!validationErrors.birthDate} helperText={validationErrors.birthDate} required
             />
             <TextField
               fullWidth type="time" label="Birth Time" name="birthTime" value={form.birthTime}
-              onChange={handleChange} margin="normal" InputLabelProps={{ shrink: true }} required
+              onChange={handleChange} InputLabelProps={{ shrink: true }}
+              error={!!validationErrors.birthTime} helperText={validationErrors.birthTime} required
             />
             <TextField
               fullWidth label="Place of Birth" name="placeOfBirth" value={form.placeOfBirth}
-              onChange={handleChange} margin="normal" required id="autocomplete"
+              onChange={handleChange} id="autocomplete"
+              error={!!validationErrors.placeOfBirth} helperText={validationErrors.placeOfBirth} required
             />
             <Button
               type="submit"
@@ -110,25 +115,16 @@ const BirthForm = () => {
               sx={{ mt: 2 }}
               disabled={loading}
             >
-              {loading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                'Submit'
-              )}
+              {loading ? <CircularProgress size={24} color="inherit" /> : 'Submit'}
             </Button>
-
           </Box>
         </Grid>
 
         <Grid item size={{ xs: 12, md: 6 }}>
-          <Typography variant="h4" gutterBottom>
-            API Response
-          </Typography>
+          <Typography variant="h4" gutterBottom>API Response</Typography>
           <Paper elevation={2} sx={{ p: 2, minHeight: '400px', whiteSpace: 'pre-wrap' }}>
             {error && (
-              <Typography color="error">
-                Error: {error}
-              </Typography>
+              <Typography color="error">Error: {error}</Typography>
             )}
             {!error && response && (
               <Typography>
