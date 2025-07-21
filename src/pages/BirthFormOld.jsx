@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Container, TextField, Button, MenuItem, Typography, Box, Grid, Paper, CircularProgress
 } from '@mui/material';
-import { BASE_URL } from './constants';
+import { BASE_URL } from '../utils/constants';
 
 const PLANATERY_POSITION = '/planetary-position'; // Replace with correct endpoint
 

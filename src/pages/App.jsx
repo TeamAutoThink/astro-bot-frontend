@@ -4,8 +4,6 @@ import { useLoadScript } from '@react-google-maps/api';
 import BirthForm from './pages/BirthFormOld';
 import Home from './pages/Home';
 import BirthDetailsForm from './pages/BirthForm';
-import Result from './pages/Result';
-
 
 const libraries = ['places'];
 
