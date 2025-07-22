@@ -17,19 +17,17 @@ const Result = () => {
 
   return (
     <div
-      style={{
-        backgroundColor: 'white',
-        padding: '2rem',
-        maxWidth: '800px',
-        margin: '2rem auto',
-        borderRadius: '8px',
-        boxShadow: '0 0 10px rgba(0,0,0,0.1)',
-        overflowX: 'auto',
-      }}
+      className="center-container"
     >
-      <h2>API Result</h2>
-      <ReactMarkdown>{markdown}</ReactMarkdown>
-      <button onClick={() => navigate('/')}>Back to Form</button>
+      <div className='result-container'>
+        <h2>Your Prediction</h2>
+        <ReactMarkdown>{markdown}</ReactMarkdown>
+        <div class="center-btn">
+          <button onClick={() => navigate('/')} type="button" className="cta-button">
+            Back to Form
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

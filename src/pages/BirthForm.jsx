@@ -3,8 +3,9 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
-import { BASE_URL, POSITION } from '../utils/constants'
-// Validation schema with yup
+import { BASE_URL, PREDECTION } from '../utils/constants';
+
+// Validation schema
 const schema = yup.object().shape({
   name: yup
     .string()
@@ -20,7 +21,7 @@ const BirthDetailsForm = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(schema),
   });
@@ -34,22 +35,18 @@ const BirthDetailsForm = () => {
 
   const onSubmit = async (formData) => {
     try {
-      // Call your API here
-      
       const data = {
         ...formData,
         birth_date: formatDate(formData.birth_date),
         birth_time: `${formData.birth_time}:00`,
-        // format birthTime or other fields if needed
+        birth_lat: 20.3039,
+        birth_long: 70.8022,
+        birth_time_zone_offset: 5.5,
       };
 
-      data.birth_lat = 20.3039
-      data.birth_long = 70.8022
-      data.birth_time_zone_offset = 5.5
+      console.log('=====base_url=====>', `${BASE_URL}${PREDECTION}`)
 
-      console.log("=====onSubmit=====>", data)
-
-      const response = await fetch(`${BASE_URL}${POSITION}`, {
+      const response = await fetch(`${BASE_URL}${PREDECTION}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -60,14 +57,9 @@ const BirthDetailsForm = () => {
       }
 
       const result = await response.json();
-
-      // Redirect to result page with API response data
-      // Passing data using state
       navigate('/result', { state: { apiResult: result } });
-
     } catch (error) {
       console.error('API call failed:', error);
-      // Optionally show error to user
     }
   };
 
@@ -81,27 +73,45 @@ const BirthDetailsForm = () => {
         </h1>
 
         <div className="form-group">
-          <input type="text" placeholder="Full Name" {...register('name')} />
+          <input
+            type="text"
+            placeholder="Full Name"
+            {...register('name')}
+            disabled={isSubmitting}
+          />
           {errors.name && <span className="error">{errors.name.message}</span>}
         </div>
 
         <div className="form-group">
-          <input type="date" {...register('birth_date')} />
+          <input
+            type="date"
+            {...register('birth_date')}
+            disabled={isSubmitting}
+          />
           {errors.birth_date && <span className="error">{errors.birth_date.message}</span>}
         </div>
 
         <div className="form-group">
-          <input type="time" {...register('birth_time')} />
+          <input
+            type="time"
+            {...register('birth_time')}
+            disabled={isSubmitting}
+          />
           {errors.birth_time && <span className="error">{errors.birth_time.message}</span>}
         </div>
 
         <div className="form-group">
-          <input type="text" placeholder="Place of Birth" {...register('birthPlace')} />
+          <input
+            type="text"
+            placeholder="Place of Birth"
+            {...register('birthPlace')}
+            disabled={isSubmitting}
+          />
           {errors.birthPlace && <span className="error">{errors.birthPlace.message}</span>}
         </div>
 
         <div className="form-group">
-          <select {...register('gender')}>
+          <select {...register('gender')} disabled={isSubmitting}>
             <option value="">Gender</option>
             <option value="male">Male</option>
             <option value="female">Female</option>
@@ -110,7 +120,9 @@ const BirthDetailsForm = () => {
           {errors.gender && <span className="error">{errors.gender.message}</span>}
         </div>
 
-        <button type="submit">Submit</button>
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Submitting...' : 'Submit'}
+        </button>
       </form>
     </div>
   );
