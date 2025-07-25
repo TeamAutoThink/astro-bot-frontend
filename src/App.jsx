@@ -5,13 +5,14 @@ import BirthForm from './pages/BirthFormOld';
 import Home from './pages/Home';
 import BirthDetailsForm from './pages/BirthForm';
 import Result from './pages/Result';
-
+import { GOOGLE_API_KEY } from './utils/constants';
 
 const libraries = ['places'];
 
 const App = () => {
+  console.log("====GOOGLE_API_KEY=====>", GOOGLE_API_KEY)
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: 'YOUR_GOOGLE_API_KEY', // Replace with your actual API key
+    googleMapsApiKey: GOOGLE_API_KEY, // Replace with your actual API key
     libraries,
   });
 
@@ -26,6 +27,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/birth-details" element={<BirthDetailsForm />} />
+        <Route path="/birth-details-old" element={<BirthForm />} />
         <Route path="/result" element={<Result />} />
 
       </Routes>

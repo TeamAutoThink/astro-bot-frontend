@@ -86,3 +86,9 @@ body, html {
     max-width: 400px;
     text-align: center;
 }
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1); /* This inverts the icon color */
+    cursor: pointer;
+}

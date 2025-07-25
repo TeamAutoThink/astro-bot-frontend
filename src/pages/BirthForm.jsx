@@ -1,4 +1,4 @@
-import React from 'react';
+import React , {useEffect} from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -63,6 +63,23 @@ const BirthDetailsForm = () => {
     }
   };
 
+  useEffect(() => {
+    const input = document.getElementById('autocomplete');
+    if (!input || !window.google) return;
+
+    const autocomplete = new window.google.maps.places.Autocomplete(input, {
+      types: ['(cities)'],
+    });
+
+    autocomplete.addListener('place_changed', () => {
+      const place = autocomplete.getPlace();
+      setForm((prev) => ({
+        ...prev,
+        placeOfBirth: place.formatted_address || place.name,
+      }));
+    });
+  }, []);
+
   return (
     <div className="center-container">
       <form className="birth-form" onSubmit={handleSubmit(onSubmit)}>
@@ -103,6 +120,7 @@ const BirthDetailsForm = () => {
         <div className="form-group">
           <input
             type="text"
+            id="autocomplete"
             placeholder="Place of Birth"
             {...register('birthPlace')}
             disabled={isSubmitting}
