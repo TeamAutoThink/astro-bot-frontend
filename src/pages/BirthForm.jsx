@@ -1,4 +1,4 @@
-import React , {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -13,14 +13,16 @@ const schema = yup.object().shape({
     .matches(/^[a-zA-Z\s]+$/, 'Name must contain only letters and spaces'),
   birth_date: yup.string().required('Birth date is required'),
   birth_time: yup.string().required('Birth time is required'),
-  birthPlace: yup.string().required('Birth place is required'),
-  gender: yup.string().required('Gender is required'),
+  birth_place: yup.string().required('Birth place is required'),
+  // gender: yup.string().required('Gender is required'),
 });
 
 const BirthDetailsForm = () => {
   const {
     register,
     handleSubmit,
+    setValue,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(schema),
@@ -39,12 +41,10 @@ const BirthDetailsForm = () => {
         ...formData,
         birth_date: formatDate(formData.birth_date),
         birth_time: `${formData.birth_time}:00`,
-        birth_lat: 20.3039,
-        birth_long: 70.8022,
+        birth_lat: parseFloat(formData.birth_lat),
+        birth_long: parseFloat(formData.birth_long),
         birth_time_zone_offset: 5.5,
       };
-
-      console.log('=====base_url=====>', `${BASE_URL}${PREDECTION}`)
 
       const response = await fetch(`${BASE_URL}${PREDECTION}`, {
         method: 'POST',
@@ -65,20 +65,27 @@ const BirthDetailsForm = () => {
 
   useEffect(() => {
     const input = document.getElementById('autocomplete');
-    if (!input || !window.google) return;
+    if (!input || !window.google || !window.google.maps) return;
 
     const autocomplete = new window.google.maps.places.Autocomplete(input, {
       types: ['(cities)'],
+      fields: ['formatted_address', 'geometry', 'name'],
     });
 
     autocomplete.addListener('place_changed', () => {
       const place = autocomplete.getPlace();
-      setForm((prev) => ({
-        ...prev,
-        placeOfBirth: place.formatted_address || place.name,
-      }));
+      const placeName = place.formatted_address || place.name;
+
+      if (place.geometry && place.geometry.location) {
+        const lat = place.geometry.location.lat();
+        const lng = place.geometry.location.lng();
+
+        setValue('birth_place', placeName);
+        setValue('birth_lat', lat);
+        setValue('birth_long', lng);
+      }
     });
-  }, []);
+  }, [setValue]);
 
   return (
     <div className="center-container">
@@ -105,7 +112,9 @@ const BirthDetailsForm = () => {
             {...register('birth_date')}
             disabled={isSubmitting}
           />
-          {errors.birth_date && <span className="error">{errors.birth_date.message}</span>}
+          {errors.birth_date && (
+            <span className="error">{errors.birth_date.message}</span>
+          )}
         </div>
 
         <div className="form-group">
@@ -114,7 +123,9 @@ const BirthDetailsForm = () => {
             {...register('birth_time')}
             disabled={isSubmitting}
           />
-          {errors.birth_time && <span className="error">{errors.birth_time.message}</span>}
+          {errors.birth_time && (
+            <span className="error">{errors.birth_time.message}</span>
+          )}
         </div>
 
         <div className="form-group">
@@ -122,21 +133,29 @@ const BirthDetailsForm = () => {
             type="text"
             id="autocomplete"
             placeholder="Place of Birth"
-            {...register('birthPlace')}
+            {...register('birth_place')}
             disabled={isSubmitting}
           />
-          {errors.birthPlace && <span className="error">{errors.birthPlace.message}</span>}
+          {errors.birth_place && (
+            <span className="error">{errors.birth_place.message}</span>
+          )}
         </div>
 
-        <div className="form-group">
+        {/* <div className="form-group">
           <select {...register('gender')} disabled={isSubmitting}>
             <option value="">Gender</option>
             <option value="male">Male</option>
             <option value="female">Female</option>
             <option value="other">Other</option>
           </select>
-          {errors.gender && <span className="error">{errors.gender.message}</span>}
-        </div>
+          {errors.gender && (
+            <span className="error">{errors.gender.message}</span>
+          )}
+        </div> */}
+
+        {/* Hidden fields for lat/lng */}
+        <input type="hidden" {...register('birth_lat')} />
+        <input type="hidden" {...register('birth_long')} />
 
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Submitting...' : 'Submit'}
