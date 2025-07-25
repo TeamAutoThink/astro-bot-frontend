@@ -35,15 +35,37 @@ const BirthDetailsForm = () => {
     return `${year}-${month}-${day}`;
   };
 
+  const getTimezoneOffset = async (lat, lng) => {
+    const timestamp = Math.floor(Date.now() / 1000);
+    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+
+    const url = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lng}&timestamp=${timestamp}&key=${apiKey}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.status === 'OK') {
+      const offsetInSeconds = data.dstOffset + data.rawOffset;
+      return offsetInSeconds / 3600; // convert to hours
+    } else {
+      throw new Error(`Timezone API error: ${data.status}`);
+    }
+  };
+
   const onSubmit = async (formData) => {
     try {
+      const lat = parseFloat(formData.birth_lat);
+      const lng = parseFloat(formData.birth_long);
+
+      const birth_time_zone_offset = await getTimezoneOffset(lat, lng);
+
       const data = {
         ...formData,
         birth_date: formatDate(formData.birth_date),
         birth_time: `${formData.birth_time}:00`,
-        birth_lat: parseFloat(formData.birth_lat),
-        birth_long: parseFloat(formData.birth_long),
-        birth_time_zone_offset: 5.5,
+        birth_lat: lat,
+        birth_long: lng,
+        birth_time_zone_offset,
       };
 
       const response = await fetch(`${BASE_URL}${PREDECTION}`, {
@@ -52,9 +74,7 @@ const BirthDetailsForm = () => {
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) {
-        throw new Error('API error');
-      }
+      if (!response.ok) throw new Error('API error');
 
       const result = await response.json();
       navigate('/result', { state: { apiResult: result } });
@@ -153,7 +173,7 @@ const BirthDetailsForm = () => {
           )}
         </div> */}
 
-        {/* Hidden fields for lat/lng */}
+        {/* Hidden fields to store lat/lng from Places API */}
         <input type="hidden" {...register('birth_lat')} />
         <input type="hidden" {...register('birth_long')} />
 
