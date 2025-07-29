@@ -10,7 +10,6 @@ import { GOOGLE_API_KEY } from './utils/constants';
 const libraries = ['places'];
 
 const App = () => {
-  console.log("====GOOGLE_API_KEY=====>", GOOGLE_API_KEY)
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: GOOGLE_API_KEY, // Replace with your actual API key
     libraries,
