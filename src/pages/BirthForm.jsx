@@ -37,43 +37,17 @@ const BirthDetailsForm = () => {
 
   const navigate = useNavigate();
 
-  const formatDate = (dateString) => {
-    const [year, month, day] = dateString.split('-');
-    return `${year}-${month}-${day}`;
-  };
-
-  const getTimezoneOffset = async (lat, lng) => {
-    const timestamp = Math.floor(Date.now() / 1000);
-    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
-
-    const url = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lng}&timestamp=${timestamp}&key=${apiKey}`;
-
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (data.status === 'OK') {
-      const offsetInSeconds = data.dstOffset + data.rawOffset;
-      return offsetInSeconds / 3600; // convert to hours
-    } else {
-      throw new Error(`Timezone API error: ${data.status}`);
-    }
-  };
-
   const onSubmit = async (formData) => {
     try {
       const lat = parseFloat(formData.birth_lat);
       const lng = parseFloat(formData.birth_long);
 
-      const birth_time_zone_offset = await getTimezoneOffset(lat, lng);
-
       const data = {
         ...formData,
-        // birth_date: formatDate(formData.birth_date),
         birth_date: `${formData.birth_year}-${formData.birth_month}-${formData.birth_day}`,
         birth_time: `${formData.birth_hour}:${formData.birth_minute}:${formData.birth_second}`,
         birth_lat: lat,
-        birth_long: lng,
-        birth_time_zone_offset,
+        birth_long: lng
       };
 
       const response = await fetch(`${BASE_URL}${PREDECTION}`, {
