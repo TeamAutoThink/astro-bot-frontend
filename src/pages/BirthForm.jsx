@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { BASE_URL, PREDECTION } from '../utils/constants';
 
 // Validation schema
@@ -11,9 +11,16 @@ const schema = yup.object().shape({
     .string()
     .required('Full name is required')
     .matches(/^[a-zA-Z\s]+$/, 'Name must contain only letters and spaces'),
-  birth_date: yup.string().required('Birth date is required'),
-  birth_time: yup.string().required('Birth time is required'),
+  birth_day: yup.string().required('Day is required'),
+  birth_month: yup.string().required('Month is required'),
+  birth_year: yup.string().required('Year is required'),
+  birth_hour: yup.string().required('Hour is required'),
+  birth_minute: yup.string().required('Minute is required'),
+  birth_second: yup.string().required('Second is required'),
   birth_place: yup.string().required('Birth place is required'),
+  terms_accepted: yup
+  .boolean()
+  .oneOf([true], 'You must accept the terms and conditions'),
   // gender: yup.string().required('Gender is required'),
 });
 
@@ -61,8 +68,9 @@ const BirthDetailsForm = () => {
 
       const data = {
         ...formData,
-        birth_date: formatDate(formData.birth_date),
-        birth_time: `${formData.birth_time}:00`,
+        // birth_date: formatDate(formData.birth_date),
+        birth_date: `${formData.birth_year}-${formData.birth_month}-${formData.birth_day}`,
+        birth_time: `${formData.birth_hour}:${formData.birth_minute}:${formData.birth_second}`,
         birth_lat: lat,
         birth_long: lng,
         birth_time_zone_offset,
@@ -77,7 +85,8 @@ const BirthDetailsForm = () => {
       if (!response.ok) throw new Error('API error');
 
       const result = await response.json();
-      navigate('/result', { state: { apiResult: result } });
+      console.log("=====result=====>", result?.prediction || '')
+      navigate('/result', { state: { apiResult: result?.prediction || '' } });
     } catch (error) {
       console.error('API call failed:', error);
     }
@@ -127,24 +136,68 @@ const BirthDetailsForm = () => {
         </div>
 
         <div className="form-group">
-          <input
-            type="date"
-            {...register('birth_date')}
-            disabled={isSubmitting}
-          />
-          {errors.birth_date && (
-            <span className="error">{errors.birth_date.message}</span>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <select style={{color: 'white'}} {...register('birth_day')} disabled={isSubmitting}>
+              <option style={{color: 'black'}} value="">Day</option>
+              {[...Array(31)].map((_, i) => (
+                <option style={{color: 'black'}} key={i + 1} value={i + 1}>{i + 1}</option>
+              ))}
+            </select>
+
+            <select style={{color: 'white'}} {...register('birth_month')} disabled={isSubmitting}>
+              <option style={{color: 'black'}} value="">Month</option>
+              {[
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+              ].map((month, i) => (
+                <option style={{color: 'black'}} key={i + 1} value={i + 1}>{month}</option>
+              ))}
+            </select>
+
+            <select style={{color: 'white'}} {...register('birth_year')} disabled={isSubmitting}>
+              <option style={{color: 'black'}} value="">Year</option>
+              {Array.from({ length: 126 }, (_, i) => 2025 - i).map(year => (
+                <option style={{color: 'black'}} key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
+
+          {(errors.birth_day || errors.birth_month || errors.birth_year) && (
+            <span className="error">Complete birth date is required</span>
           )}
         </div>
 
         <div className="form-group">
-          <input
-            type="time"
-            {...register('birth_time')}
-            disabled={isSubmitting}
-          />
-          {errors.birth_time && (
-            <span className="error">{errors.birth_time.message}</span>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <select style={{color: 'white'}} {...register('birth_hour')} defaultValue="">
+              <option style={{color: 'black'}} value="" disabled hidden>Hour</option>
+              {Array.from({ length: 24 }, (_, i) => (
+                <option style={{color: 'black'}} key={i} value={String(i).padStart(2, '0')}>
+                  {String(i).padStart(2, '0')}
+                </option>
+              ))}
+            </select>
+
+            <select style={{color: 'white'}} {...register('birth_minute')} defaultValue="">
+              <option style={{color: 'black'}} value="" disabled hidden>Minute</option>
+              {Array.from({ length: 60 }, (_, i) => (
+                <option style={{color: 'black'}} key={i} value={String(i).padStart(2, '0')}>
+                  {String(i).padStart(2, '0')}
+                </option>
+              ))}
+            </select>
+
+            <select style={{color: 'white'}} {...register('birth_second')} defaultValue="">
+              <option style={{color: 'black'}} value="" disabled hidden>Second</option>
+              {Array.from({ length: 60 }, (_, i) => (
+                <option style={{color: 'black'}} key={i} value={String(i).padStart(2, '0')}>
+                  {String(i).padStart(2, '0')}
+                </option>
+              ))}
+            </select>
+          </div>
+          {(errors.birth_hour || errors.birth_minute || errors.birth_second) && (
+            <span className="error">Complete birth time is required</span>
           )}
         </div>
 
@@ -161,6 +214,8 @@ const BirthDetailsForm = () => {
           )}
         </div>
 
+
+
         {/* <div className="form-group">
           <select {...register('gender')} disabled={isSubmitting}>
             <option value="">Gender</option>
@@ -176,6 +231,25 @@ const BirthDetailsForm = () => {
         {/* Hidden fields to store lat/lng from Places API */}
         <input type="hidden" {...register('birth_lat')} />
         <input type="hidden" {...register('birth_long')} />
+
+        <div className="form-group">
+          <label>
+            <input
+              type="checkbox"
+              {...register('terms_accepted')}
+              disabled={isSubmitting}
+            />
+            <span style={{color : 'white'}}>
+              I accept the{' '}
+              <Link to="/terms" target="_blank">Terms and Conditions</Link>,{' '}
+              <Link to="/privacy" target="_blank">Privacy Policy</Link>, and{' '}
+              <Link to="/disclaimer" target="_blank">Disclaimer</Link>.
+            </span>
+          </label>
+          {errors.terms_accepted && (
+            <span className="error">{errors.terms_accepted.message}</span>
+          )}
+        </div>
 
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Submitting...' : 'Submit'}

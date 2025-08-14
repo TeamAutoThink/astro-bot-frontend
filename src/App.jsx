@@ -5,6 +5,13 @@ import BirthForm from './pages/BirthFormOld';
 import Home from './pages/Home';
 import BirthDetailsForm from './pages/BirthForm';
 import Result from './pages/Result';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
+import Disclaimer from './pages/Disclaimer';
+
+
+import NotFound from './pages/NotFound'
+
 import { GOOGLE_API_KEY } from './utils/constants';
 
 const libraries = ['places'];
@@ -28,7 +35,10 @@ const App = () => {
         <Route path="/birth-details" element={<BirthDetailsForm />} />
         <Route path="/birth-details-old" element={<BirthForm />} />
         <Route path="/result" element={<Result />} />
-
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/disclaimer" element={<Disclaimer />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );
