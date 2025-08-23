@@ -1,12 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import '../assets/styles/privacy.css'
 
 const PrivacyPolicy = () => {
   return (
     <div id='terms-condition' style={{ padding: '40px', fontFamily: 'Arial, sans-serif', lineHeight: 1.6 }}>
       <h1 style={{ textAlign : 'center'}}>Privacy Policy</h1>
-      <p><strong>Effective Date:</strong> [Insert Date]</p>
-      <p><strong>Last Updated:</strong> [Insert Date]</p>
+      <p><strong>Effective Date:</strong>1st Augest 2025</p>
+      <p><strong>Last Updated:</strong>1st Augest 2025</p>
 
       <h2>1. Information We Collect</h2>
       <p>We collect birth details, name, email, IP address, and device data.</p>
@@ -32,13 +33,8 @@ const PrivacyPolicy = () => {
       <h2>8. Changes to This Policy</h2>
       <p>We may update this policy. Continued use indicates acceptance.</p>
 
-      <h2>9. Contact</h2>
-      <p>📧 [Insert Email] | 🌐 [Insert Website URL]</p>
-
-      <hr />
-      <p>
-        <Link to="/terms">Terms and Conditions</Link> | <Link to="/disclaimer">Disclaimer</Link>
-      </p>
+      <h2>9. Contact Us</h2>
+      <p>📧 sales@auto-think.in | 🌐 <a href='https://astro.auto-think.in/'>https://astro.auto-think.in/</a></p>
     </div>
   );
 };

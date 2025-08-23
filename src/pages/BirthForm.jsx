@@ -1,185 +1,111 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
 import { useNavigate, Link } from 'react-router-dom';
 import { BASE_URL, PREDECTION } from '../utils/constants';
-
-// Validation schema
-const schema = yup.object().shape({
-  name: yup
-    .string()
-    .required('Full name is required')
-    .matches(/^[a-zA-Z\s]+$/, 'Name must contain only letters and spaces'),
-  birth_day: yup.string().required('Day is required'),
-  birth_month: yup.string().required('Month is required'),
-  birth_year: yup.string().required('Year is required'),
-  birth_hour: yup.string().required('Hour is required'),
-  birth_minute: yup.string().required('Minute is required'),
-  birth_second: yup.string().required('Second is required'),
-  birth_place: yup.string().required('Birth place is required'),
-  terms_accepted: yup
-  .boolean()
-  .oneOf([true], 'You must accept the terms and conditions'),
-  // gender: yup.string().required('Gender is required'),
-});
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import DateInputMask from '../components/Date';
+import TimeInputMask from '../components/Time'
+import { birthDetailsSchema } from '../utils/birthFormValidation';
+import { googleAutocomplete } from '../utils/index'
+import { toast } from 'react-toastify';
 
 const BirthDetailsForm = () => {
+  localStorage.removeItem('birth_details')
+  const navigate = useNavigate();
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const {
     register,
     handleSubmit,
     setValue,
-    getValues,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(birthDetailsSchema),
   });
-
-  const navigate = useNavigate();
 
   const onSubmit = async (formData) => {
     try {
+
+      if (!executeRecaptcha) {
+        console.error('Execute reCAPTCHA not available yet');
+        // setNotification('reCAPTCHA not ready. Please try again in a moment.');
+        return;
+      }
+
+      // Get a token for the 'contact' action
+      const token = await executeRecaptcha('contact');
+
       const lat = parseFloat(formData.birth_lat);
       const lng = parseFloat(formData.birth_long);
 
       const data = {
         ...formData,
-        birth_date: `${formData.birth_year}-${formData.birth_month}-${formData.birth_day}`,
-        birth_time: `${formData.birth_hour}:${formData.birth_minute}:${formData.birth_second}`,
+        birth_date: formData.birth_date.split('-').reverse().join('-'),
         birth_lat: lat,
-        birth_long: lng
+        birth_long: lng,
+        token
       };
 
+      let body = JSON.stringify(data);
       const response = await fetch(`${BASE_URL}${PREDECTION}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body,
       });
 
-      if (!response.ok) throw new Error('API error');
+      if (!response.ok){
+        toast.error('API error');
+        return;
+      };
 
       const result = await response.json();
-      console.log("=====result=====>", result?.prediction || '')
-      navigate('/result', { state: { apiResult: result?.prediction || '' } });
+      
+      localStorage.removeItem('birth_details')
+      const prediction = result?.prediction || ''
+      
+
+      body = JSON.parse(body);
+      body['prediction'] = prediction;
+      
+      localStorage.setItem('birth_details',JSON.stringify(body));
+
+      navigate('/result', { state: { apiResult: prediction } });
     } catch (error) {
+      toast.error('API call failed');
       console.error('API call failed:', error);
     }
   };
 
   useEffect(() => {
-    const input = document.getElementById('autocomplete');
-    if (!input || !window.google || !window.google.maps) return;
-
-    const autocomplete = new window.google.maps.places.Autocomplete(input, {
-      types: ['(cities)'],
-      fields: ['formatted_address', 'geometry', 'name'],
-    });
-
-    autocomplete.addListener('place_changed', () => {
-      const place = autocomplete.getPlace();
-      const placeName = place.formatted_address || place.name;
-
-      if (place.geometry && place.geometry.location) {
-        const lat = place.geometry.location.lat();
-        const lng = place.geometry.location.lng();
-
-        setValue('birth_place', placeName);
-        setValue('birth_lat', lat);
-        setValue('birth_long', lng);
-      }
-    });
+    googleAutocomplete('autocomplete', setValue);
   }, [setValue]);
 
   return (
     <div className="center-container">
       <form className="birth-form" onSubmit={handleSubmit(onSubmit)}>
-        <h1>
-          Enter Your
-          <br />
-          Birth Details
-        </h1>
+        <h2>
+          Discover what the stars say about you <br></br> with the power of AI.
+        </h2>
 
-        <div className="form-group">
-          <input
-            type="text"
-            placeholder="Full Name"
-            {...register('name')}
-            disabled={isSubmitting}
-          />
-          {errors.name && <span className="error">{errors.name.message}</span>}
+        <div className='form-group'>
+          <label>Birth Date</label>
+          <DateInputMask {...register('birth_date')} value={watch('birth_date') || ''} />
+          {errors.birth_date && <span className="error">{errors.birth_date.message}</span>}
+        </div>
+        
+        <div className='form-group'>
+          <label>Birth Time (24 Hour Format)</label>
+          <TimeInputMask {...register('birth_time')} value={watch('birth_time') || ''} />
+          {errors.birth_time && <span className="error">{errors.birth_time.message}</span>}
         </div>
 
         <div className="form-group">
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <select style={{color: 'white'}} {...register('birth_day')} disabled={isSubmitting}>
-              <option style={{color: 'black'}} value="">Day</option>
-              {[...Array(31)].map((_, i) => (
-                <option style={{color: 'black'}} key={i + 1} value={i + 1}>{i + 1}</option>
-              ))}
-            </select>
-
-            <select style={{color: 'white'}} {...register('birth_month')} disabled={isSubmitting}>
-              <option style={{color: 'black'}} value="">Month</option>
-              {[
-                'January', 'February', 'March', 'April', 'May', 'June',
-                'July', 'August', 'September', 'October', 'November', 'December'
-              ].map((month, i) => (
-                <option style={{color: 'black'}} key={i + 1} value={i + 1}>{month}</option>
-              ))}
-            </select>
-
-            <select style={{color: 'white'}} {...register('birth_year')} disabled={isSubmitting}>
-              <option style={{color: 'black'}} value="">Year</option>
-              {Array.from({ length: 126 }, (_, i) => 2025 - i).map(year => (
-                <option style={{color: 'black'}} key={year} value={year}>{year}</option>
-              ))}
-            </select>
-          </div>
-
-          {(errors.birth_day || errors.birth_month || errors.birth_year) && (
-            <span className="error">Complete birth date is required</span>
-          )}
-        </div>
-
-        <div className="form-group">
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <select style={{color: 'white'}} {...register('birth_hour')} defaultValue="">
-              <option style={{color: 'black'}} value="" disabled hidden>Hour</option>
-              {Array.from({ length: 24 }, (_, i) => (
-                <option style={{color: 'black'}} key={i} value={String(i).padStart(2, '0')}>
-                  {String(i).padStart(2, '0')}
-                </option>
-              ))}
-            </select>
-
-            <select style={{color: 'white'}} {...register('birth_minute')} defaultValue="">
-              <option style={{color: 'black'}} value="" disabled hidden>Minute</option>
-              {Array.from({ length: 60 }, (_, i) => (
-                <option style={{color: 'black'}} key={i} value={String(i).padStart(2, '0')}>
-                  {String(i).padStart(2, '0')}
-                </option>
-              ))}
-            </select>
-
-            <select style={{color: 'white'}} {...register('birth_second')} defaultValue="">
-              <option style={{color: 'black'}} value="" disabled hidden>Second</option>
-              {Array.from({ length: 60 }, (_, i) => (
-                <option style={{color: 'black'}} key={i} value={String(i).padStart(2, '0')}>
-                  {String(i).padStart(2, '0')}
-                </option>
-              ))}
-            </select>
-          </div>
-          {(errors.birth_hour || errors.birth_minute || errors.birth_second) && (
-            <span className="error">Complete birth time is required</span>
-          )}
-        </div>
-
-        <div className="form-group">
+          <label>Place of Birth</label>
           <input
             type="text"
             id="autocomplete"
-            placeholder="Place of Birth"
+            placeholder="eg. Delhi"
             {...register('birth_place')}
             disabled={isSubmitting}
           />
@@ -187,21 +113,7 @@ const BirthDetailsForm = () => {
             <span className="error">{errors.birth_place.message}</span>
           )}
         </div>
-
-
-
-        {/* <div className="form-group">
-          <select {...register('gender')} disabled={isSubmitting}>
-            <option value="">Gender</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
-          </select>
-          {errors.gender && (
-            <span className="error">{errors.gender.message}</span>
-          )}
-        </div> */}
-
+        
         {/* Hidden fields to store lat/lng from Places API */}
         <input type="hidden" {...register('birth_lat')} />
         <input type="hidden" {...register('birth_long')} />
@@ -215,9 +127,7 @@ const BirthDetailsForm = () => {
             />
             <span style={{color : 'white'}}>
               I accept the{' '}
-              <Link to="/terms" target="_blank">Terms and Conditions</Link>,{' '}
-              <Link to="/privacy" target="_blank">Privacy Policy</Link>, and{' '}
-              <Link to="/disclaimer" target="_blank">Disclaimer</Link>.
+              <Link to="/terms" target="_blank">Terms and Conditions, Privacy Policy and Disclaimer</Link>
             </span>
           </label>
           {errors.terms_accepted && (
@@ -225,9 +135,16 @@ const BirthDetailsForm = () => {
           )}
         </div>
 
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Submitting...' : 'Submit'}
-        </button>
+        <div className='center-btn'>
+          <button 
+            className="g-recaptcha"
+            data-sitekey="6LcpVa4rAAAAAM84fTv2zc0E75L-6HKzfaOqx7w9"
+            data-callback='onSubmit'
+            data-action='submit' type="submit" disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit'}
+          </button>
+        </div>
       </form>
     </div>
   );

@@ -1,12 +1,11 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import '../assets/styles/privacy.css'
 
 const Terms = () => {
   return (
     <div  id='terms-condition' style={{ padding: '40px', fontFamily: 'Arial, sans-serif', lineHeight: 1.6 }}>
       <h1 style={{ textAlign: 'center'}}>Terms and Conditions</h1>
-      <p><strong>Effective Date:</strong> [Insert Date]</p>
-      <p><strong>Last Updated:</strong> [Insert Date]</p>
+      <p><strong>Effective Date:</strong>1st Augest 2025</p>
+      <p><strong>Last Updated:</strong>1st Augest 2025</p>
 
       <p>
         Welcome to [Your App Name] ("we", "our", or "us"). These Terms and Conditions
@@ -24,14 +23,14 @@ const Terms = () => {
       <h2>3. User Data & Privacy</h2>
       <p>
         We collect personal data such as birth details, which may be processed via
-        third-party AI APIs. See our <Link to="/privacy">Privacy Policy</Link> for more.
+        third-party AI APIs. See our Privacy Policy for more.
       </p>
 
       <h2>4. Limitation of Liability</h2>
       <p>We are not liable for outcomes based on use of the service.</p>
 
       <h2>5. Intellectual Property</h2>
-      <p>All content belongs to [Your App Name] or its licensors.</p>
+      <p>All content belongs to astro.auto-think.in or its licensors.</p>
 
       <h2>6. Acceptable Use</h2>
       <p>No unlawful or abusive behavior is allowed on the platform.</p>
@@ -49,15 +48,11 @@ const Terms = () => {
       <p>We may suspend or terminate access if you violate these Terms.</p>
 
       <h2>10. Governing Law</h2>
-      <p>These Terms are governed by the laws of [Insert Country/State].</p>
+      <p>These Terms are governed by the laws of India.</p>
 
       <h2>11. Contact Us</h2>
-      <p>📧 [Insert Email] | 🌐 [Insert Website URL]</p>
+      <p>📧 sales@auto-think.in | 🌐 <a href='https://astro.auto-think.in/'>https://astro.auto-think.in/</a></p>
 
-      <hr />
-      <p>
-        <Link to="/privacy">Privacy Policy</Link> | <Link to="/disclaimer">Disclaimer</Link>
-      </p>
     </div>
   );
 };

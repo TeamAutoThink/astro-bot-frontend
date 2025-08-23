@@ -22,10 +22,10 @@ body, html {
     padding: 20px;
     border-radius: 10px;
     width: 100%;
-    max-width: 400px;
+    max-width: 350px;
 }
 
-.birth-form h1, .birth-form p {
+.birth-form h1,.birth-form h2, .birth-form p {
     text-align: center;
     margin-bottom: 20px;
     color: white;
@@ -44,14 +44,15 @@ body, html {
 
 .birth-form input::placeholder{
     color: white;
+    opacity: 0.2;
 }
 
 .birth-form .form-group {
     margin-bottom: 16px;
 }
 
-.birth-form button {
-    width: 100%;
+.birth-form button, .result-container button {
+    width: 140px;
     padding: 12px;
     background: #3730a3;
     color: white;
@@ -63,6 +64,14 @@ body, html {
 
 .birth-form button:hover {
     background: #004c99;
+}
+
+.birth-form label {
+    color: white;
+}
+
+.birth-form input {
+    margin-top: 2px;
 }
 
 .home-page button{
@@ -83,11 +92,9 @@ body, html {
 
 .result-container{
     color: white;
-    max-width: 400px;
+    max-width: 500px;
     text-align: center;
 }
-
-
 
 #terms-condition{
     color: white;
